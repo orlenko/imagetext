@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Paste Image and Overlay Text</title>
   <style>
@@ -12,11 +13,13 @@
       font-size: 18px;
       color: #999;
     }
+
     #pastedImage {
       max-width: 100%;
       max-height: 100%;
       display: none;
     }
+
     #textOverlay {
       position: absolute;
       top: 10px;
@@ -26,17 +29,22 @@
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
       white-space: pre-wrap;
     }
+
     #imageContainer {
       position: relative;
       display: inline-block;
     }
+
     textarea {
       margin-top: 10px;
       width: 400px;
       height: 100px;
     }
   </style>
+
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
+
 <body>
   <div id="pasteArea">Paste an image here</div>
   <div id="imageContainer">
@@ -44,20 +52,25 @@
     <div id="textOverlay"></div>
   </div>
   <textarea id="textInput" placeholder="Enter text to overlay"></textarea>
+  <button id="captureButton">Capture and Copy</button>
+  <div id="renderedImage"></div>
 
   <script>
     const pasteArea = document.getElementById('pasteArea');
     const pastedImage = document.getElementById('pastedImage');
     const textOverlay = document.getElementById('textOverlay');
     const textInput = document.getElementById('textInput');
+    const captureButton = document.getElementById('captureButton');
+    const renderedImage = document.getElementById('renderedImage');
+    const imageContainer = document.getElementById('imageContainer');
 
-    pasteArea.addEventListener('paste', function(event) {
+    pasteArea.addEventListener('paste', function (event) {
       const items = (event.clipboardData || event.originalEvent.clipboardData).items;
       for (let i = 0; i < items.length; i++) {
         if (items[i].type.indexOf('image') !== -1) {
           const blob = items[i].getAsFile();
           const reader = new FileReader();
-          reader.onload = function(event) {
+          reader.onload = function (event) {
             pastedImage.src = event.target.result;
             pastedImage.style.display = 'block';
             pasteArea.style.display = 'none';
@@ -68,9 +81,30 @@
       }
     });
 
-    textInput.addEventListener('input', function() {
+    textInput.addEventListener('input', function () {
       textOverlay.textContent = textInput.value;
+    });
+
+    captureButton.addEventListener('click', function () {
+      html2canvas(imageContainer).then(function (canvas) {
+        renderedImage.appendChild(canvas);
+        canvas.toBlob(function (blob) {
+          navigator.clipboard
+            .write([
+              new ClipboardItem(
+                Object.defineProperty({}, blob.type, {
+                  value: blob,
+                  enumerable: true
+                })
+              )
+            ])
+            .then(function () {
+              console.log('Copied to clipboard!');
+            });
+        });
+      });
     });
   </script>
 </body>
+
 </html>
