@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Paste Image and Overlay Text/title>
+  <style>
+    #pasteArea {
+      width: 400px;
+      height: 300px;
+      border: 2px dashed #ccc;
+      text-align: center;
+      line-height: 300px;
+      font-size: 18px;
+      color: #999;
+    }
+    #pastedImage {
+      max-width: 100%;
+      max-height: 100%;
+      display: none;
+    }
+    #textOverlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      font-size: 24px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      white-space: pre-wrap;
+    }
+    #imageContainer {
+      position: relative;
+      display: inline-block;
+    }
+    textarea {
+      margin-top: 10px;
+      width: 400px;
+      height: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div id="pasteArea">Paste an image here</div>
+  <div id="imageContainer">
+    <img id="pastedImage" alt="Pasted Image">
+    <div id="textOverlay"></div>
+  </div>
+  <textarea id="textInput" placeholder="Enter text to overlay"></textarea>
+
+  <script>
+    const pasteArea = document.getElementById('pasteArea');
+    const pastedImage = document.getElementById('pastedImage');
+    const textOverlay = document.getElementById('textOverlay');
+    const textInput = document.getElementById('textInput');
+
+    pasteArea.addEventListener('paste', function(event) {
+      const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const blob = items[i].getAsFile();
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            pastedImage.src = event.target.result;
+            pastedImage.style.display = 'block';
+            pasteArea.style.display = 'none';
+          };
+          reader.readAsDataURL(blob);
+          break;
+        }
+      }
+    });
+
+    textInput.addEventListener('input', function() {
+      textOverlay.textContent = textInput.value;
+    });
+  </script>
+</body>
+</html>
